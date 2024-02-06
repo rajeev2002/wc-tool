@@ -11,6 +11,16 @@ void number_of_bytes(ifstream& file){
     cout<<num_bytes;
 }
 
+void number_of_lines(ifstream& file){
+
+    string line;
+    int num_lines=0;
+    while(getline(file, line)){
+        num_lines+=1;
+    }
+    cout<<num_lines;
+}
+
 int main(int argc, char* argv[]){
 
     string option = argv[1], file_path = argv[2];
@@ -18,5 +28,7 @@ int main(int argc, char* argv[]){
 
     if(option[1] == 'c'){
         number_of_bytes(file);
+    }else if(option[1] == 'l'){
+        number_of_lines(file);
     }
 }
