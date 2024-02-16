@@ -5,12 +5,25 @@
 
 using namespace std;
 
-void move_pointer_to_start(ifstream& file){
+void printHelpMsg(){
+
+    cout<<"Usage: ./ccwc [OPTION] [FILE]\n";
+    cout<<"With no FILE, read standard input.";
+    cout<<"You can use the cat operator and the pipe operator to give input as well.\n";
+    cout<<"Like this: cat file | ./ccwc [OPTION]\n\n";
+    cout<<"  option                 description\n";
+    cout<<"  -c, --bytes            print the byte counts\n";
+    cout<<"  -m, --chars            print the character counts\n";
+    cout<<"  -l, --lines            print the newline counts\n";
+    cout<<"  -w, --words            print the word counts\n\n";
+}
+
+void move_pointer_to_start(istream& file){
     file.clear();
     file.seekg(0,ios:: beg);
 }
 
-void number_of_bytes(ifstream& file){
+void number_of_bytes(istream& file){
 
     file.seekg(0,ios::end);
     int num_bytes = file.tellg();
@@ -19,7 +32,7 @@ void number_of_bytes(ifstream& file){
     
 }
 
-void number_of_lines(ifstream& file){
+void number_of_lines(istream& file){
 
     string line;
     int num_lines=0;
@@ -31,7 +44,7 @@ void number_of_lines(ifstream& file){
 
 }
 
-void number_of_words(ifstream& file){
+void number_of_words(istream& file){
 
     string word;
     int num_words=0;
@@ -43,7 +56,7 @@ void number_of_words(ifstream& file){
 
 }
 
-void number_of_characters(ifstream& file){
+void number_of_characters(istream& file){
 
     char ch;
     int num_characters = 0;
@@ -55,24 +68,9 @@ void number_of_characters(ifstream& file){
     
 }
 
-int main(int argc, char* argv[]){
+void do_action(char action, istream& file){
 
-    if(argc == 2){
-        string first_arg = argv[1];
-        if(first_arg[0]!='-'){
-            ifstream file(first_arg, ios::binary);
-            number_of_lines(file);
-            number_of_words(file);
-            number_of_bytes(file);
-        }
-    }else{
-
-        string option = argv[1], file_path = argv[2];
-        ifstream file(file_path, ios::binary);
-
-        char action = option[1];
-
-        switch(action){
+    switch(action){
             case 'c':
                 number_of_bytes(file);
                 break;
@@ -85,9 +83,74 @@ int main(int argc, char* argv[]){
             case 'm':
                 number_of_characters(file);
                 break;
-            default:
-                cout<<"The option you have provided is invalid. please use the following command for help"<<"\n";
-                cout<<"cwcc --help";
+    }
+
+}
+
+void printErrMsg(string type){
+
+    string errMsg = "Use the following command for help.\n./ccwc --help";
+    cout<<type<<"\n"<<errMsg;
+
+}
+
+bool isActionValid(string action){
+    
+    if(action.length() !=2 || action[0]!='-' || !(action[1]=='c'||action[1]=='l'||action[1]=='w'||action[1]=='m')){
+        printErrMsg("Invalid Action");
+        return false;
+    }
+
+    return true;
+}
+
+int main(int argc, char* argv[]){
+
+    if(argc == 2){
+        string first_arg = argv[1];
+        if(first_arg == "--help"){
+            printHelpMsg();
+        }else if(first_arg[0]!='-'){
+            ifstream file(first_arg, ios::binary);
+            if(!file){
+                printErrMsg("Invalid File Path");
+                return 0;
+            }
+            number_of_lines(file);
+            number_of_words(file);
+            number_of_bytes(file);
+        }else{
+
+            if(!isActionValid(first_arg)){
+                return 0;
+            }
+
+            char action = first_arg[1];
+            do_action(action, cin);
+        }
+    }else if(argc == 3){
+
+        string option = argv[1], file_path = argv[2];
+        ifstream file(file_path, ios::binary);
+
+        if(!isActionValid(option)){
+            return 0;
+        }
+
+        if(!file){
+            printErrMsg("Invalid File Path");
+            return 0;
+        }
+
+        char action = option[1];
+
+        do_action(action, file);
+        
+    }else{
+        if(argc==1){
+            printErrMsg("No Arguments");
+        }else{
+            printErrMsg("Too Many Arguments");
         }
     }
 
